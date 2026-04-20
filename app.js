@@ -73,20 +73,44 @@ function isNonEmptyString(value) {
 }
 
 /* ===================================================
+   HELPER: Clear the main container and return ref
+   Used by every render function to start fresh
+   =================================================== */
+
+// Get the main app container and clear all old content
+// This ensures each view renders cleanly without old elements
+function getCleanContainer() {
+  const appContainer = document.getElementById('appContainer');
+  appContainer.innerHTML = '';
+  return appContainer;
+}
+
+/* ===================================================
+   HELPER: Create a page heading
+   Simple helper for consistent heading styling
+   =================================================== */
+
+// Create and return a styled h2 heading element
+function createPageHeading(text) {
+  const heading = document.createElement('h2');
+  heading.textContent = text;
+  heading.className = 'page-heading';
+  return heading;
+}
+
+/* ===================================================
    RENDERING: renderHome()
-   Shows the home page content
+   Shows the home page with welcome message
+   This is the landing view for the SPA
    =================================================== */
 
 // Display the home page with welcome content
 function renderHome() {
-  const appContainer = document.getElementById('appContainer');
-  appContainer.innerHTML = '';
+  const container = getCleanContainer();
 
-  // Create main heading
-  const heading = document.createElement('h2');
-  heading.textContent = 'Welcome to Pantry Recipe App';
-  heading.style.fontSize = '1.75rem';
-  heading.style.marginBottom = '1rem';
+  // Add page heading
+  const heading = createPageHeading('Welcome to Pantry Recipe App');
+  container.appendChild(heading);
 
   // Create welcome message
   const message = document.createElement('p');
@@ -94,6 +118,7 @@ function renderHome() {
   message.style.fontSize = '1.125rem';
   message.style.color = 'var(--text-secondary)';
   message.style.marginBottom = '2rem';
+  container.appendChild(message);
 
   // Create features list
   const list = document.createElement('ul');
@@ -108,6 +133,7 @@ function renderHome() {
     '💾 All data saved locally',
   ];
 
+  // Build each feature item safely
   features.forEach(feature => {
     const item = document.createElement('li');
     item.textContent = feature;
@@ -115,73 +141,99 @@ function renderHome() {
     list.appendChild(item);
   });
 
-  // Append elements to container
-  appContainer.appendChild(heading);
-  appContainer.appendChild(message);
-  appContainer.appendChild(list);
+  container.appendChild(list);
 }
 
 /* ===================================================
-   RENDERING: renderIngredients()
-   Shows the ingredients page (placeholder for now)
+   RENDERING: renderIngredientsView()
+   Shows the ingredients page
+   Displays ingredient list, filter, and add button
+   (Full implementation comes in Phase 4)
    =================================================== */
 
 // Display the ingredients page
 function renderIngredientsView() {
-  const appContainer = document.getElementById('appContainer');
-  appContainer.innerHTML = '';
+  const container = getCleanContainer();
 
-  const heading = document.createElement('h2');
-  heading.textContent = 'Ingredients';
-  heading.style.fontSize = '1.75rem';
-  heading.style.marginBottom = '1rem';
+  // Add page heading
+  const heading = createPageHeading('Ingredients');
+  container.appendChild(heading);
 
+  // Placeholder message
   const message = document.createElement('p');
   message.textContent = 'Ingredients view coming in Phase 4...';
   message.style.color = 'var(--text-secondary)';
+  container.appendChild(message);
 
-  appContainer.appendChild(heading);
-  appContainer.appendChild(message);
+  // Show a note about what will be in this view
+  const note = document.createElement('p');
+  note.textContent = 'Soon you\'ll be able to add ingredients, track quantities, and manage your pantry.';
+  note.style.fontSize = '0.95rem';
+  note.style.color = 'var(--text-secondary)';
+  note.style.marginTop = '1rem';
+  container.appendChild(note);
 }
 
 /* ===================================================
-   RENDERING: renderRecipes()
-   Shows the recipes page (placeholder for now)
+   RENDERING: renderRecipesView()
+   Shows the recipes page
+   Displays recipe list with search and add button
+   (Full implementation comes in Phase 8)
    =================================================== */
 
 // Display the recipes page
 function renderRecipesView() {
-  const appContainer = document.getElementById('appContainer');
-  appContainer.innerHTML = '';
+  const container = getCleanContainer();
 
-  const heading = document.createElement('h2');
-  heading.textContent = 'Recipes';
-  heading.style.fontSize = '1.75rem';
-  heading.style.marginBottom = '1rem';
+  // Add page heading
+  const heading = createPageHeading('Recipes');
+  container.appendChild(heading);
 
+  // Placeholder message
   const message = document.createElement('p');
   message.textContent = 'Recipes view coming in Phase 8...';
   message.style.color = 'var(--text-secondary)';
+  container.appendChild(message);
 
-  appContainer.appendChild(heading);
-  appContainer.appendChild(message);
+  // Show a note about what will be in this view
+  const note = document.createElement('p');
+  note.textContent = 'Soon you\'ll be able to create recipes, check ingredient availability, and cook meals.';
+  note.style.fontSize = '0.95rem';
+  note.style.color = 'var(--text-secondary)';
+  note.style.marginTop = '1rem';
+  container.appendChild(note);
 }
 
 /* ===================================================
    RENDERING: renderApp()
-   Main render function that shows the correct view
-   based on current app state
+   
+   MAIN RENDER FUNCTION - The heart of the SPA
+   
+   This function:
+   1. Routes to the correct render function based on appState.currentView
+   2. Updates the DOM with the new view content
+   3. Updates the navigation buttons to show which view is active
+   
+   This is called whenever we need to refresh the UI.
+   Each view render function should use getCleanContainer() to clear
+   the old content before building the new view.
    =================================================== */
 
 // Display the correct view based on appState.currentView
+// This is the main routing logic for the single-page app
 function renderApp() {
-  // Determine which view function to call
+  // Route to the correct view renderer
+  // The views are self-contained functions that build their own DOM
   if (appState.currentView === VIEWS.HOME) {
     renderHome();
   } else if (appState.currentView === VIEWS.INGREDIENTS) {
     renderIngredientsView();
   } else if (appState.currentView === VIEWS.RECIPES) {
     renderRecipesView();
+  } else {
+    // Fallback to home if view is invalid
+    appState.currentView = VIEWS.HOME;
+    renderHome();
   }
 
   // Update nav button styling to show which view is active
@@ -210,7 +262,17 @@ function updateActiveNavButton() {
 
 /* ===================================================
    EVENT HANDLERS: Navigation
-   Handle nav button clicks to switch views
+   
+   SPA Navigation Flow:
+   1. User clicks a nav button
+   2. We extract the view name from the button's data attribute
+   3. We update appState.currentView
+   4. We call renderApp() which:
+      - Routes to the correct render function
+      - Clears the container and builds new DOM
+      - Updates the active nav button styling
+   
+   This pattern allows smooth view switching without page reloads.
    =================================================== */
 
 // Set up navigation listeners - runs once on page load
@@ -220,12 +282,15 @@ function setupNavigation() {
   navButtons.forEach(button => {
     button.addEventListener('click', () => {
       // Get the view name from the button's data attribute
+      // e.g., 'home', 'ingredients', 'recipes'
       const viewName = button.getAttribute('data-view');
 
-      // Update app state to the new view
+      // Update app state to remember which view is current
+      // This persists during the app's lifetime (doesn't survive page refresh)
       appState.currentView = viewName;
 
-      // Render the new view
+      // Call renderApp() to re-render the page with the new view
+      // This is the single place where the DOM is updated for view changes
       renderApp();
     });
   });
