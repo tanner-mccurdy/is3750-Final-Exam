@@ -1,0 +1,277 @@
+/* ===================================================
+   PANTRY RECIPE APP - STYLES
+   Design System & Global Styles
+   =================================================== */
+
+/* Design system color palette */
+:root {
+  --bg-primary: #FFFCF2;
+  --text-primary: #252422;
+  --text-secondary: #403D39;
+  --border-muted: #CCC5B9;
+  --accent-primary: #EB5E28;
+}
+
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+/* ===================================================
+   HEADER
+   =================================================== */
+
+.app-header {
+  background-color: var(--bg-primary);
+  border-bottom: 2px solid var(--border-muted);
+  padding: 1.5rem 2rem;
+  text-align: center;
+}
+
+.app-header h1 {
+  font-size: 2rem;
+  color: var(--text-primary);
+}
+
+/* ===================================================
+   NAVIGATION
+   =================================================== */
+
+.app-nav {
+  display: flex;
+  gap: 0.5rem;
+  background-color: var(--bg-primary);
+  padding: 1rem 2rem;
+  border-bottom: 1px solid var(--border-muted);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--border-muted);
+  background-color: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.nav-btn:hover {
+  background-color: var(--accent-primary);
+  color: white;
+  border-color: var(--accent-primary);
+}
+
+.nav-btn--active {
+  background-color: var(--accent-primary);
+  color: white;
+  border-color: var(--accent-primary);
+}
+
+/* ===================================================
+   MAIN CONTAINER
+   =================================================== */
+
+.app-container {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+  min-height: 60vh;
+}
+
+/* ===================================================
+   CARDS & SECTIONS
+   =================================================== */
+
+.card {
+  background-color: white;
+  border: 1px solid var(--border-muted);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+/* ===================================================
+   FLASH MESSAGES
+   =================================================== */
+
+.flash-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.flash-message {
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  min-width: 300px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.flash-message--success {
+  background-color: #E8F5E9;
+  color: #2E7D32;
+  border: 1px solid #C8E6C9;
+}
+
+.flash-message--error {
+  background-color: #FFEBEE;
+  color: #C62828;
+  border: 1px solid #FFCDD2;
+}
+
+/* ===================================================
+   BUTTONS
+   =================================================== */
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--border-muted);
+  background-color: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background-color: var(--text-secondary);
+  color: white;
+  border-color: var(--text-secondary);
+}
+
+.btn--primary {
+  background-color: var(--accent-primary);
+  color: white;
+  border-color: var(--accent-primary);
+}
+
+.btn--primary:hover {
+  background-color: #d94e20;
+  border-color: #d94e20;
+}
+
+.btn--small {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.btn--danger {
+  color: #C62828;
+  border-color: #FFCDD2;
+}
+
+.btn--danger:hover {
+  background-color: #C62828;
+  color: white;
+  border-color: #C62828;
+}
+
+/* ===================================================
+   FORM ELEMENTS
+   =================================================== */
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  font-size: 1rem;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(235, 94, 40, 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.form-hint {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+/* ===================================================
+   RESPONSIVE
+   =================================================== */
+
+@media (max-width: 640px) {
+  .app-container {
+    padding: 0 1rem;
+  }
+
+  .app-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .nav-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .flash-container {
+    left: 1rem;
+    right: 1rem;
+  }
+
+  .flash-message {
+    min-width: unset;
+  }
+}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pantry Recipe App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header with app title -->
+    <header class="app-header">
+        <h1>🍳 Pantry Recipe App</h1>
+    </header>
+
+    <!-- Navigation bar for switching between views -->
+    <nav class="app-nav">
+        <button class="nav-btn nav-btn--active" data-view="home">Home</button>
+        <button class="nav-btn" data-view="ingredients">Ingredients</button>
+        <button class="nav-btn" data-view="recipes">Recipes</button>
+    </nav>
+
+    <!-- Flash message container for success/error alerts -->
+    <div id="flashContainer" class="flash-container"></div>
+
+    <!-- Main app container where views will render -->
+    <main class="app-container" id="appContainer">
+        <!-- Views will be rendered here -->
+    </main>
+
+    <!-- Load styles and app.js with defer to ensure DOM is ready -->
+    <script defer src="app.js"></script>
+</body>
+</html>
