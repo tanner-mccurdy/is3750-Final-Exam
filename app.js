@@ -73,6 +73,225 @@ function isNonEmptyString(value) {
 }
 
 /* ===================================================
+   VALIDATION: Ingredient-specific validators
+   These ensure data integrity before it's saved or used
+   =================================================== */
+
+// Check if a URL is valid (for recipe images)
+// Returns true only for valid http(s) URLs
+function isValidUrl(url) {
+  if (!isNonEmptyString(url)) return false;
+  try {
+    // Try to parse as URL - will throw if invalid
+    const parsed = new URL(url);
+    // Only allow http and https
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch (e) {
+    return false;
+  }
+}
+
+// Check if a value is a valid ingredient type
+// Valid types are 'discrete' or 'measured'
+function isValidIngredientType(value) {
+  return value === INGREDIENT_TYPES.DISCRETE || value === INGREDIENT_TYPES.MEASURED;
+}
+
+// Check if a value is a valid measured unit
+// Valid units: tsp, tbsp, cup, ml, g, oz
+function isValidMeasuredUnit(value) {
+  const validUnits = Object.values(MEASURED_UNITS);
+  return validUnits.includes(value);
+}
+
+// Check if a value is a valid recipe unit
+// Recipe units include all measured units plus 'unit' for discrete items
+function isValidRecipeUnit(value) {
+  return isValidMeasuredUnit(value) || value === DISCRETE_UNIT;
+}
+
+/* ===================================================
+   STORAGE: Load and save ingredients to localStorage
+   
+   Storage Format (in localStorage):
+   Key: 'pantry_ingredients'
+   Value: JSON string of array of ingredient objects
+   
+   Each ingredient object shape:
+   {
+     id: string (UUID),
+     name: string,
+     type: 'discrete' or 'measured',
+     canonicalQuantity: number,
+     canonicalUnit: 'unit' or one of MEASURED_UNITS
+   }
+   
+   Defensive approach:
+   - Validate everything loaded from localStorage
+   - Ignore broken entries
+   - Fall back to empty array if parsing fails
+   =================================================== */
+
+// Load ingredients from localStorage
+// If nothing is stored or data is broken, return empty array
+function loadIngredients() {
+  try {
+    // Get the JSON string from localStorage
+    const stored = localStorage.getItem(STORAGE_KEYS.INGREDIENTS);
+
+    // If nothing was stored, return empty array
+    if (!stored) return [];
+
+    // Parse the JSON
+    const parsed = JSON.parse(stored);
+
+    // Make sure it's an array
+    if (!Array.isArray(parsed)) return [];
+
+    // Validate each ingredient and filter out broken ones
+    const validated = parsed.filter(ingredient => {
+      // Check that all required fields exist
+      if (!ingredient || typeof ingredient !== 'object') return false;
+      if (!isNonEmptyString(ingredient.id)) return false;
+      if (!isNonEmptyString(ingredient.name)) return false;
+      if (!isValidIngredientType(ingredient.type)) return false;
+      if (typeof ingredient.canonicalQuantity !== 'number' || ingredient.canonicalQuantity <= 0) return false;
+
+      // Check unit based on type
+      if (ingredient.type === INGREDIENT_TYPES.DISCRETE) {
+        if (ingredient.canonicalUnit !== DISCRETE_UNIT) return false;
+      } else {
+        if (!isValidMeasuredUnit(ingredient.canonicalUnit)) return false;
+      }
+
+      return true;
+    });
+
+    return validated;
+  } catch (error) {
+    // If anything goes wrong, log it and return empty array
+    console.error('Error loading ingredients from localStorage:', error);
+    return [];
+  }
+}
+
+// Save ingredients to localStorage
+// Takes an array of ingredient objects and stores as JSON
+function saveIngredients(ingredients) {
+  try {
+    // Validate that we're saving an array
+    if (!Array.isArray(ingredients)) {
+      console.error('saveIngredients: Expected array but got', typeof ingredients);
+      return false;
+    }
+
+    // Convert to JSON and store
+    localStorage.setItem(STORAGE_KEYS.INGREDIENTS, JSON.stringify(ingredients));
+    return true;
+  } catch (error) {
+    console.error('Error saving ingredients to localStorage:', error);
+    return false;
+  }
+}
+
+/* ===================================================
+   STORAGE: Load and save recipes to localStorage
+   
+   Storage Format (in localStorage):
+   Key: 'pantry_recipes'
+   Value: JSON string of array of recipe objects
+   
+   Each recipe object shape:
+   {
+     id: string (UUID),
+     name: string,
+     instructions: string,
+     imageUrl: string (can be empty),
+     ingredients: [
+       {
+         ingredientId: string (reference to ingredient),
+         quantity: number,
+         unit: string (one of MEASURED_UNITS or DISCRETE_UNIT)
+       }
+     ]
+   }
+   
+   Defensive approach:
+   - Validate everything loaded from localStorage
+   - Ignore broken entries
+   - Fall back to empty array if parsing fails
+   =================================================== */
+
+// Load recipes from localStorage
+// If nothing is stored or data is broken, return empty array
+function loadRecipes() {
+  try {
+    // Get the JSON string from localStorage
+    const stored = localStorage.getItem(STORAGE_KEYS.RECIPES);
+
+    // If nothing was stored, return empty array
+    if (!stored) return [];
+
+    // Parse the JSON
+    const parsed = JSON.parse(stored);
+
+    // Make sure it's an array
+    if (!Array.isArray(parsed)) return [];
+
+    // Validate each recipe and filter out broken ones
+    const validated = parsed.filter(recipe => {
+      // Check that all required fields exist
+      if (!recipe || typeof recipe !== 'object') return false;
+      if (!isNonEmptyString(recipe.id)) return false;
+      if (!isNonEmptyString(recipe.name)) return false;
+      if (!isNonEmptyString(recipe.instructions)) return false;
+
+      // imageUrl can be empty, but if present must be valid
+      if (recipe.imageUrl && !isValidUrl(recipe.imageUrl)) return false;
+
+      // ingredients must be an array
+      if (!Array.isArray(recipe.ingredients)) return false;
+
+      // Validate each ingredient entry in the recipe
+      const validIngredients = recipe.ingredients.every(ing => {
+        if (!ing || typeof ing !== 'object') return false;
+        if (!isNonEmptyString(ing.ingredientId)) return false;
+        if (typeof ing.quantity !== 'number' || ing.quantity <= 0) return false;
+        if (!isValidRecipeUnit(ing.unit)) return false;
+        return true;
+      });
+
+      return validIngredients;
+    });
+
+    return validated;
+  } catch (error) {
+    // If anything goes wrong, log it and return empty array
+    console.error('Error loading recipes from localStorage:', error);
+    return [];
+  }
+}
+
+// Save recipes to localStorage
+// Takes an array of recipe objects and stores as JSON
+function saveRecipes(recipes) {
+  try {
+    // Validate that we're saving an array
+    if (!Array.isArray(recipes)) {
+      console.error('saveRecipes: Expected array but got', typeof recipes);
+      return false;
+    }
+
+    // Convert to JSON and store
+    localStorage.setItem(STORAGE_KEYS.RECIPES, JSON.stringify(recipes));
+    return true;
+  } catch (error) {
+    console.error('Error saving recipes to localStorage:', error);
+    return false;
+  }
+}
+
+/* ===================================================
    HELPER: Clear the main container and return ref
    Used by every render function to start fresh
    =================================================== */
