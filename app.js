@@ -566,7 +566,11 @@ function renderIngredientForm(container) {
     if (isEdit) {
       updateIngredient(appState.editingIngredientId, name, type, quantity, unit);
     } else {
-      createIngredient(name, type, quantity, unit);
+      if (createIngredient(name, type, quantity, unit)) {
+        appState.view = 'default';
+        appState.editingIngredientId = null;
+        renderIngredientsView();
+      }
     }
   });
 
@@ -889,23 +893,44 @@ function renderRecipeForm(container) {
     const imageUrl = safeText(imageInput.value);
 
     const formIngredients = [];
+    let hasError = false;
+    
     form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
       if (checkbox.checked) {
         const parent = checkbox.parentElement;
         const qtyInput = parent.querySelector('input[type="number"]');
         const unitInput = parent.querySelector('select');
+        
+        // Validate that quantity is filled in
+        const quantity = parseFloat(qtyInput.value);
+        if (isNaN(quantity) || quantity <= 0) {
+          showFlash(`Please enter a valid quantity for each ingredient`, 'error');
+          hasError = true;
+          return;
+        }
+        
         formIngredients.push({
           ingredientId: checkbox.value,
-          quantity: parseFloat(qtyInput.value),
+          quantity: quantity,
           unit: unitInput.value,
         });
       }
     });
+    
+    if (hasError) return;
 
     if (isEdit) {
-      updateRecipe(appState.editingRecipeId, name, instructions, imageUrl, formIngredients);
+      if (updateRecipe(appState.editingRecipeId, name, instructions, imageUrl, formIngredients)) {
+        appState.view = 'default';
+        appState.editingRecipeId = null;
+        renderRecipesView();
+      }
     } else {
-      createRecipe(name, instructions, imageUrl, formIngredients);
+      if (createRecipe(name, instructions, imageUrl, formIngredients)) {
+        appState.view = 'default';
+        appState.editingRecipeId = null;
+        renderRecipesView();
+      }
     }
   });
 
